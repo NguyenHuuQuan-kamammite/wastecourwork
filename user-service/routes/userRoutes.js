@@ -3,12 +3,29 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
+
+
+// Test route to check if the user routes are working
+router.get('/test', (req, res) => {
+    res.send("User route is working!");
+});
+
+// Route to display the registration page (GET)
+router.get('/register', (req, res) => {
+    res.send("Register page"); 
+});
+
+// Route to display the login page (GET)
+router.get('/login', (req, res) => {
+    res.send("Login page");
+});
+
 // Public routes
 router.post('/register', userController.createUser); // Register a new user
-router.post('/login', userController.loginUser);     // Login user (if needed, you can implement this in the controller)
+router.post('/login', userController.loginUser);     // Login user (implement this in the controller)
 
-// Protected routes (need to be logged in)
-router.use(authMiddleware.verifyToken); // Apply authentication middleware to all routes below
+// Protected routes (require authentication)
+router.use(authMiddleware.verifyToken); // All following routes require authentication
 
 router.get('/', userController.getAllUsers);     // Get all users
 router.get('/:id', userController.getUserById);  // Get a specific user by ID
