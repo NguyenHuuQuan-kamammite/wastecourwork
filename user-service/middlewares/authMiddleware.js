@@ -3,7 +3,8 @@ const User = require('../models/userModel'); // Assuming User model is used to v
 
 // Middleware to verify the token
 exports.verifyToken = async (req, res, next) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
+  const token = req.header('Authorization') && req.header('Authorization').split(' ')[1];
+
 
   // Check if token is provided
   if (!token) {
