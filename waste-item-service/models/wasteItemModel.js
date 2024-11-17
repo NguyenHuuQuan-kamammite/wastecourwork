@@ -10,3 +10,4 @@ const wasteItemSchema = new mongoose.Schema({
 
 // Create and export the model
 module.exports = mongoose.model('WasteItem', wasteItemSchema);
+//aaa
