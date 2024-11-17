@@ -28,6 +28,12 @@ app.use('/api/categories', createProxyMiddleware({
     pathRewrite: { '^/api/categories': '' }, // Xóa tiền tố /api/categories khỏi URL
 }));
 
+app.use('/api/items', createProxyMiddleware({
+    target: process.env.WASTE_ITEM_SERVICE_URL || 'http://localhost:3004', // Address of waste-item-service
+    changeOrigin: true,
+    pathRewrite: { '^/api/items': '' }, // Remove the /api/items prefix
+}));
+
 // Root route
 app.get('/', (req, res) => {
     res.send('Welcome to the Waste Management App API Gateway!');
