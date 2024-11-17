@@ -56,4 +56,4 @@ mongoose.connect(process.env.MONGO_URI, {
 // Start the server
 app.listen(PORT, () => {
     console.log(`API Gateway is running on port ${PORT}`);
-});
+
