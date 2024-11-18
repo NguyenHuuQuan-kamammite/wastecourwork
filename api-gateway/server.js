@@ -1,65 +1,43 @@
-require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
 const mongoose = require('mongoose');
-const { createProxyMiddleware } = require('http-proxy-middleware'); // Middleware for proxying requests
+const dotenv = require('dotenv');
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 8000; // API Gateway runs on port 8000
+const PORT = process.env.PORT || 5000;
 
-// Middleware to parse JSON
+// Middleware
 app.use(express.json());
 
-// Proxy Configuration (Forward requests to specific services)
-app.use('/api/users', createProxyMiddleware({
-    target: process.env.USER_SERVICE_URL || 'http://localhost:3001', // Default to localhost if no URL in .env
-    changeOrigin: true,
-    pathRewrite: { '^/api/users': '' }, // Remove '/api/users' from the forwarded URL
-    logLevel: 'debug', // Enable detailed logs for debugging
-}));
+// Route Imports
+const userRoutes = require('../user-service/routes/userRoutes.js');
+const categoryRoutes = require('../waste-category-service/routes/wasteCategoryRoutes.js');
+const itemRoutes = require('../waste-item-service/routes/wasteItemRoutes.js');
+const challengeRoutes = require('../challenge-service/routes/challengeRoutes.js');
 
-app.use('/api/challenges', createProxyMiddleware({
-    target: process.env.CHALLENGE_SERVICE_URL || 'http://localhost:3002', // Default to localhost if no URL in .env
-    changeOrigin: true,
-    pathRewrite: { '^/api/challenges': '' }, // Remove '/api/challenges' from the forwarded URL
-}));
-
-app.use('/api/categories', createProxyMiddleware({
-    target: process.env.WASTE_CATEGORY_SERVICE_URL || 'http://localhost:3003', // Default to localhost if no URL in .env
-    changeOrigin: true,
-    pathRewrite: { '^/api/categories': '' }, // Remove '/api/categories' from the forwarded URL
-}));
-
-// Root route
-app.get('/', (req, res) => {
-    res.send('Welcome to the Waste Management App API Gateway!');
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ message: 'An error occurred!', error: err.message });
-});
+// Routes
+app.use('/users', userRoutes);
+app.use('/waste-categories', categoryRoutes);
+app.use('/waste-items', itemRoutes);
+app.use('/challenges', challengeRoutes);
 
 // MongoDB Connection
-console.log('Attempting to connect to MongoDB...');
 mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 })
-.then(() => {
-    console.log('MongoDB connected successfully for API Gateway');
-    console.log(`Connected to MongoDB at: ${process.env.MONGO_URI}`);
-})
-.catch((err) => {
-    console.error('MongoDB connection error:', err.message);
-    console.error('Detailed error:', err);
+  .then(() => console.log('MongoDB connected successfully'))
+  .catch((error) => console.error('MongoDB connection error:', error));
+
+// Error Handling Middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Internal Server Error' });
 });
 
-// Start the server
+// Start Server
 app.listen(PORT, () => {
-    console.log(`API Gateway is running on port ${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
-console.log(process.env.USER_SERVICE_URL); // Kiểm tra URL của dịch vụ người dùng
-console.log(process.env.CHALLENGE_SERVICE_URL); // Kiểm tra URL của dịch vụ thử thách
-console.log(process.env.WASTE_CATEGORY_SERVICE_URL); // Kiểm tra URL của dịch vụ loại rác
-console.log(process.env.MONGO_URI); // Kiểm tra URL của MongoDB

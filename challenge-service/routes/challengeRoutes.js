@@ -1,20 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const challengeController = require('../controllers/challengeController');
+// const authMiddleware = require('../middlewares/authMiddleware');
 
-// Route to create a new challenge
-router.post('/', challengeController.createChallenge);
+// Test route to check if the challenge routes are working
+router.get('/test', (req, res) => {
+    res.send("Challenge route is working!");
+});
 
-// Route to get a single challenge by ID
-router.get('/:id', challengeController.getChallengeById);
+// Public routes
+router.post('/', challengeController.createChallenge);  // Create a new challenge
+router.get('/', challengeController.getAllChallenges);  // Get all challenges
 
-// Route to get all challenges
-router.get('/', challengeController.getAllChallenges);
+// Protected routes (require authentication)
+// router.use(authMiddleware.verifyToken);  // All following routes require authentication
 
-// Route to update a challenge by ID
-router.put('/:id', challengeController.updateChallenge);
-
-// Route to delete a challenge by ID
-router.delete('/:id', challengeController.deleteChallenge);
+router.get('/:id', challengeController.getChallengeById);  // Get a challenge by ID
+router.put('/:id', challengeController.updateChallenge);   // Update a challenge by ID
+router.delete('/:id', challengeController.deleteChallenge); // Delete a challenge by ID
 
 module.exports = router;

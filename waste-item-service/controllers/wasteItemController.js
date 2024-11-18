@@ -1,4 +1,5 @@
-const wasteItemService = require('../services/wasteItemService');
+
+const wasteItemService = require('../models/wasteItemModel');
 
 // Get all waste items
 exports.getAllItems = async (req, res) => {
