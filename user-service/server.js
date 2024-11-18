@@ -5,12 +5,13 @@ const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET;
 const MONGO_URI = process.env.MONGO_URI;
 app.use(express.json());
 app.use('/users', userRoutes);
- 
+const cors = require('cors');
+app.use(cors());
 // Connect to MongoDB
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
