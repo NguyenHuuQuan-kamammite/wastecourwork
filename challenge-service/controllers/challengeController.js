@@ -4,10 +4,18 @@ class ChallengeController {
     // Create a new challenge
     async createChallenge(req, res) {
         try {
-            const challenge = await ChallengeModel.create(req.body);
-            res.status(201).json(challenge);
+            const { description, difficulty, scoring } = req.body;
+
+            // Validate input
+            if (!description || !difficulty || !scoring) {
+                return res.status(400).json({ message: 'All fields (description, difficulty, scoring) are required' });
+            }
+
+            const challenge = await ChallengeModel.create({ description, difficulty, scoring });
+            res.status(201).json({ message: 'Challenge created successfully', challenge });
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            console.error('Error creating challenge:', error.message);
+            res.status(500).json({ error: 'Internal Server Error' });
         }
     }
 
@@ -15,10 +23,13 @@ class ChallengeController {
     async getChallengeById(req, res) {
         try {
             const challenge = await ChallengeModel.findById(req.params.id);
-            if (!challenge) return res.status(404).json({ message: 'Challenge not found' });
+            if (!challenge) {
+                return res.status(404).json({ message: 'Challenge not found' });
+            }
             res.status(200).json(challenge);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            console.error('Error fetching challenge:', error.message);
+            res.status(500).json({ error: 'Internal Server Error' });
         }
     }
 
@@ -28,18 +39,34 @@ class ChallengeController {
             const challenges = await ChallengeModel.find();
             res.status(200).json(challenges);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            console.error('Error fetching challenges:', error.message);
+            res.status(500).json({ error: 'Internal Server Error' });
         }
     }
 
     // Update a challenge by ID
     async updateChallenge(req, res) {
         try {
-            const challenge = await ChallengeModel.findByIdAndUpdate(req.params.id, req.body, { new: true });
-            if (!challenge) return res.status(404).json({ message: 'Challenge not found' });
-            res.status(200).json(challenge);
+            const { description, difficulty, scoring } = req.body;
+
+            // Validate input
+            if (!description && !difficulty && !scoring) {
+                return res.status(400).json({ message: 'At least one field (description, difficulty, scoring) is required to update' });
+            }
+
+            const challenge = await ChallengeModel.findByIdAndUpdate(
+                req.params.id,
+                { description, difficulty, scoring },
+                { new: true, runValidators: true }
+            );
+
+            if (!challenge) {
+                return res.status(404).json({ message: 'Challenge not found' });
+            }
+            res.status(200).json({ message: 'Challenge updated successfully', challenge });
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            console.error('Error updating challenge:', error.message);
+            res.status(400).json({ error: 'Bad Request' });
         }
     }
 
@@ -47,10 +74,13 @@ class ChallengeController {
     async deleteChallenge(req, res) {
         try {
             const challenge = await ChallengeModel.findByIdAndDelete(req.params.id);
-            if (!challenge) return res.status(404).json({ message: 'Challenge not found' });
+            if (!challenge) {
+                return res.status(404).json({ message: 'Challenge not found' });
+            }
             res.status(200).json({ message: 'Challenge deleted successfully' });
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            console.error('Error deleting challenge:', error.message);
+            res.status(500).json({ error: 'Internal Server Error' });
         }
     }
 }
