@@ -19,7 +19,11 @@ mongoose.connect(process.env.MONGO_URI, {
 .catch((err) => console.error('MongoDB connection error:', err));
 
 // Routes
+<<<<<<< Updated upstream
 app.use('/api/categories', wasteCategoryRoutes);
+=======
+app.use('/categories', wasteCategoryRoutes);
+>>>>>>> Stashed changes
 
 // Start Server
 app.listen(PORT, () => {
