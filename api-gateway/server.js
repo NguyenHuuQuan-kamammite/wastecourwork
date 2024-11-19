@@ -1,7 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const { createProxyMiddleware } = require('http-proxy-middleware');
+const axios = require('axios');
+
 // Load environment variables
 dotenv.config();
 
@@ -11,37 +12,50 @@ const PORT = process.env.PORT || 8000;
 // Middleware
 app.use(express.json());
 
+// Function to handle proxy requests
+const proxyRequest = async (req, res, target) => {
+  try {
+    // Xử lý loại bỏ dấu '/' thừa ở cuối đường dẫn
+    const url = `${target.replace(/\/$/, '')}${req.originalUrl.replace('/api', '')}`;
 
-// Proxy Configuration (Chuyển tiếp yêu cầu đến các service cụ thể)
-app.use('/api/users', createProxyMiddleware({
-    target: process.env.USER_SERVICE_URL || 'http://localhost:3001', // Địa chỉ của user-service
-    changeOrigin: true,
-    pathRewrite: { '^/api/users': '' }, // Xóa tiền tố /api/users khỏi URL
-}));
+    console.log("Forwarding request to: ", url); // In ra URL để kiểm tra
 
-app.use('/api/challenges', createProxyMiddleware({
-    target: process.env.CHALLENGE_SERVICE_URL || 'http://localhost:3002', // Địa chỉ của challenge-service
-    changeOrigin: true,
-    pathRewrite: { '^/api/challenges': '' }, // Xóa tiền tố /api/challenges khỏi URL
-}));
+    // Gửi request đến service sử dụng axios
+    const response = await axios({
+      method: req.method,
+      url, // URL chính xác cho service mục tiêu
+      headers: {
+        ...(req.headers['authorization'] && { Authorization: req.headers['authorization'] }),
+        ...(req.headers['content-type'] && { 'Content-Type': req.headers['content-type'] }),
+      },
+      data: req.body, // Forward body nếu có
+    });
 
-app.use('/api/categories', createProxyMiddleware({
-    target: process.env.WASTE_CATEGORY_SERVICE_URL || 'http://localhost:3003', // Địa chỉ của waste-category-service
-    changeOrigin: true,
-    pathRewrite: { '^/api/categories': '' }, // Xóa tiền tố /api/categories khỏi URL
-}));
+    // Trả lại response từ service cho client
+    res.status(response.status).json(response.data);
+  } catch (error) {
+    console.error('Error forwarding request:', error.message);
+    if (error.response) {
+      res.status(error.response.status).json(error.response.data);
+    } else {
+      res.status(500).json({ message: 'Service Unavailable' });
+    }
+  }
+};
 
-app.use('/api/items', createProxyMiddleware({
-    target: process.env.WASTE_ITEM_SERVICE_URL || 'http://localhost:3004', // Address of waste-item-service
-    changeOrigin: true,
-    pathRewrite: { '^/api/items': '' }, // Remove the /api/items prefix
-}));
+
+
+
+// Proxy routes
+app.use('/users', (req, res) => proxyRequest(req, res, process.env.USER_SERVICE_URL || 'http://localhost:3001'));
+app.use('/challenges', (req, res) => proxyRequest(req, res, process.env.CHALLENGE_SERVICE_URL || 'http://localhost:3002'));
+app.use('/categories', (req, res) => proxyRequest(req, res, process.env.WASTE_CATEGORY_SERVICE_URL || 'http://localhost:3003'));
+app.use('/items', (req, res) => proxyRequest(req, res, process.env.WASTE_ITEM_SERVICE_URL || 'http://localhost:3004'));
 
 // Root route
 app.get('/', (req, res) => {
-    res.send('Welcome to the Waste Management App API Gateway!');
+  res.send('Welcome to the Waste Management App API Gateway!');
 });
-
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {

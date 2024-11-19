@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET;
 const MONGO_URI = process.env.MONGO_URI;
 app.use(express.json());
-app.use('/', userRoutes);
+app.use('/users', userRoutes);
 const cors = require('cors');
 app.use(cors());
 // Connect to MongoDB
