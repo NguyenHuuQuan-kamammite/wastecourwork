@@ -1,0 +1,101 @@
+version: '3.9'
+
+services:
+  api-gateway:
+    build:
+      context: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - user-service
+      - waste-category-service
+      - waste-item-service
+      - challenge-service
+    environment:
+      - USER_SERVICE_URL=http://user-service:3001
+      - WASTE_CATEGORY_SERVICE_URL=http://waste-category-service:3003
+      - WASTE_ITEM_SERVICE_URL=http://waste-item-service:3004
+      - CHALLENGE_SERVICE_URL=http://challenge-service:3002
+
+  user-service:
+    build:
+      context: ./user-service
+    container_name: user-service
+    ports:
+      - "3001:3001"
+    environment:
+      - MONGO_URI=mongodb://mongo-user-service:27017/userdb
+    depends_on:
+      - mongo-user-service
+
+  waste-category-service:
+    build:
+      context: ./waste-category-service
+    container_name: waste-category-service
+    ports:
+      - "3003:3003"
+    environment:
+      - MONGO_URI=mongodb://mongo-waste-category:27017/categorydb
+    depends_on:
+      - mongo-waste-category
+
+  waste-item-service:
+    build:
+      context: ./waste-item-service
+    container_name: waste-item-service
+    ports:
+      - "3004:3004"
+    environment:
+      - MONGO_URI=mongodb://mongo-waste-item:27017/itemdb
+    depends_on:
+      - mongo-waste-item
+
+  challenge-service:
+    build:
+      context: ./challenge-service
+    container_name: challenge-service
+    ports:
+      - "3004:3004"
+    environment:
+      - MONGO_URI=mongodb://mongo-challenge:27017/challengedb
+    depends_on:
+      - mongo-challenge
+
+  mongo-user-service:
+    image: mongo:5.0
+    container_name: mongo-user-service
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo-user-data:/data/db
+
+  mongo-waste-category:
+    image: mongo:5.0
+    container_name: mongo-waste-category
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongo-category-data:/data/db
+
+  mongo-waste-item:
+    image: mongo:5.0
+    container_name: mongo-waste-item
+    ports:
+      - "27020:27017"
+    volumes:
+      - mongo-item-data:/data/db
+
+  mongo-challenge:
+    image: mongo:5.0
+    container_name: mongo-challenge
+    ports:
+      - "27021:27017"
+    volumes:
+      - mongo-challenge-data:/data/db
+
+volumes:
+  mongo-user-data:
+  mongo-category-data:
+  mongo-item-data:
+  mongo-challenge-data:

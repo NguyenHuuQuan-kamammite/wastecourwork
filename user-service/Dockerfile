@@ -14,7 +14,7 @@ RUN npm install
 COPY . .
 
 # Expose the port the service runs on (replace 3000 if your server uses a different port)
-EXPOSE 3000
+EXPOSE 3001
 
 # Define environment variables if necessary
 # ENV NODE_ENV=production

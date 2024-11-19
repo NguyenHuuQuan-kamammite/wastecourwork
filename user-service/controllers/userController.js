@@ -73,6 +73,15 @@ exports.getUserById = async (req, res) => {
       res.status(500).json({ message: "Error retrieving user" });
   }
 };
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select('-password'); // Fetch all users, excluding passwords
+    res.status(200).json(users); // Send users as a JSON response
+  } catch (error) {
+    console.error("Error retrieving all users:", error); // Log the error for debugging
+    res.status(500).json({ message: "Error retrieving all users" }); // Return a 500 status code
+  }
+};
 
 
 
@@ -120,7 +129,4 @@ exports.deleteUser = async (req, res) => {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
-};
-exports.getAllUsers = async (req, res) => {
-  
 };
